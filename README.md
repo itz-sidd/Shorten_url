@@ -1,120 +1,174 @@
-⚡ URL-SHORTNER_DOCK: High-Performance Link Shortener
+⚡ High-Performance URL Shortener Dock (FlashURL clone)
 
-📖 About The Project
+## Table of Contents
 
-FlashURL is not just another URL shortener; it is a microservices-ready application designed to handle high-traffic loads efficiently.
+* [About The Project](#about-the-project)
+* [Features](#features)
+* [Architecture & Tech Stack](#architecture--tech-stack)
+* [Getting Started](#getting-started)
 
-Unlike basic CRUD applications, this project implements a Read-Through Caching Strategy using Redis. This ensures that popular links are served instantly from memory (RAM), protecting the primary database from being overwhelmed by read traffic.
+  * [Prerequisites](#prerequisites)
+  * [Installation & Running Locally](#installation--running-locally)
+* [Usage](#usage)
 
-🌟 Key Features
+  * [API Endpoints](#api-endpoints)
+  * [Web UI](#web-ui)
+* [Deployment](#deployment)
+* [Configuration / Environment Variables](#configuration--environment-variables)
+* [Contributing](#contributing)
+* [License](#license)
+* [Contact](#contact)
 
-🚀 Ultra-Fast Redirects: Sub-millisecond read times using Redis caching.
+---
 
-🐳 Fully Containerized: Docker & Docker Compose setup for consistent development and deployment environments.
+## About The Project
 
-💾 Persistent Storage: PostgreSQL ensures data integrity and durability.
+Shorten_url is a modern, efficient link-shortening service built to handle high traffic and deliver fast redirects. Unlike a basic CRUD prototype, this project is architected for performance and scalability, employing caching, horizontal scaling, containerisation and persistence.
 
-🔄 Scalable Architecture: Stateless application tier (Flask + Gunicorn) ready for horizontal scaling.
+This repository includes:
 
-🌑 Modern UI: Clean, responsive dark-mode frontend for user interaction.
+* A web service built with Flask (Python)
+* Persistent storage via PostgreSQL
+* Caching via Redis to serve popular links in-memory
+* Container-ready setup with Docker & Docker Compose
+* A simple user interface for creating + using short links
 
-🏗️ System Architecture
+---
 
-The application follows a 3-tier architecture optimized for read-heavy workloads:
+## Features
 
-graph LR
-    User -->|HTTP Request| LoadBalancer
-    LoadBalancer --> App(Flask Service)
-    App -->|1. Check Cache| Cache(Redis)
-    Cache -- Hit --> App
-    Cache -- Miss --> App
-    App -->|2. Fetch Data| DB(PostgreSQL)
-    App -->|3. Update Cache| Cache
-    App -->|4. Response| User
+* Ultra-fast link redirect via caching layer (Redis)
+* Stateless application tier optimized for horizontal scaling
+* Persistent storage via PostgreSQL for durability
+* Containerised environment for development & deployment consistency
+* Clean, responsive web UI (with dark mode)
+* API endpoint to programmatically create short URLs
+* Easy to deploy via Docker / Docker Compose
 
+---
 
-🚀 Getting Started
+## Architecture & Tech Stack
 
-Follow these steps to get a local copy up and running.
+**Tech Stack:**
 
-Prerequisites
+* Backend: Python + Flask
+* Cache: Redis
+* Database: PostgreSQL
+* Containerisation: Docker, Docker Compose
+* Web UI: HTML / CSS / JavaScript
 
-Docker Desktop installed on your machine.
+**Architecture in a nutshell:**
+User → Web UI/API → Application (Flask + Gunicorn) →
 
-Installation & Run
+* On each redirect: Check Redis cache → if hit, return redirect; if miss, fetch from PostgreSQL and then populate cache.
+* On creation: Validate URL → generate unique short code → store in DB → optionally warm cache.
 
-Clone the repo
+This design ensures that read-heavy redirect traffic is served from memory (Redis) quickly, reducing load on the primary database.
 
-git clone [https://github.com/itz-sidd/Shorten_url.git](https://github.com/itz-sidd/Shorten_url.git)
-cd Shorten_url
+---
 
+## Getting Started
 
-Start the services
+### Prerequisites
 
-docker-compose up --build
+* Docker & Docker Compose installed on your machine
+* (Optional) Local installation of PostgreSQL & Redis if you prefer non-containerised setup
 
+### Installation & Running Locally
 
-That's it!
+```bash
+# Clone repository  
+git clone https://github.com/itz-sidd/Shorten_url.git  
+cd Shorten_url  
 
-Visit the UI: http://localhost:5000
+# Build and run via Docker Compose  
+docker-compose up --build  
+```
 
-API Endpoint: http://localhost:5000/shorten
+Once up, the service will typically be available at `http://localhost:5000`.
 
-🔌 API Reference
+---
 
-1. Create Short Link
+## Usage
 
-URL: /shorten
+### API Endpoints
 
-Method: POST
+* **Create Short Link**
 
-Headers: Content-Type: application/json
+  * **Endpoint:** `POST /shorten`
+  * **Headers:** `Content-Type: application/json`
+  * **Request Body:**
 
-Body:
+    ```json
+    {
+      "original_url": "https://www.google.com"
+    }
+    ```
+  * **Response Example:**
 
-{
-  "original_url": "[https://www.google.com](https://www.google.com)"
-}
+    ```json
+    {
+      "original_url": "https://www.google.com",
+      "short_url": "http://your-domain.com/1a"
+    }
+    ```
+* **Redirect via Short Code**
 
+  * **Endpoint:** `GET /<short_code>`
+  * **Behavior:** Redirects the user to the original long URL.
 
-Response:
+### Web UI
 
-{
-  "original_url": "[https://www.google.com](https://www.google.com)",
-  "short_url": "[https://url-shorten-dock.onrender.com/1a](https://url-shorten-dock.onrender.com/1a)"
-}
+Navigate to the base URL of the service (e.g. `http://localhost:5000`) and use the simple interface to paste a long URL and get back a short link. The UI also supports default dark mode and is mobile responsive.
 
+---
 
-2. Access Link
+## Deployment
 
-URL: /<short_code>
+This project is designed to be deployed in a containerised production environment. You can use the provided `docker-compose.yml` or adapt it to your favourite orchestration platform (Kubernetes, ECS, etc.).
+**Environment variables** such as `DATABASE_URL`, `REDIS_URL`, and `PORT` must be set in your production environment.
 
-Method: GET
+---
 
-Description: Redirects the user to the original long URL.
+## Configuration / Environment Variables
 
-☁️ Deployment
+Ensure the following environment variables are set:
 
-This project is deployed using a CI/CD workflow on Render.
+| Variable       | Description                             | Example                                       |
+| -------------- | --------------------------------------- | --------------------------------------------- |
+| `DATABASE_URL` | Connection string for PostgreSQL        | `postgresql://user:password@host:5432/dbname` |
+| `REDIS_URL`    | Connection for Redis cache              | `redis://host:6379/0`                         |
+| `PORT`         | Port on which the Flask app will listen | `5000`                                        |
 
-Service Type: Web Service (Docker Runtime)
+You may also configure other settings (e.g., short-code length, domain) by editing `config.py`.
 
-Database: Managed PostgreSQL 15
+---
 
-Cache: Managed Redis (Valkey)
+## Contributing
 
-Environment Variables Required:
+Thanks for considering contribution! Here’s how you can help:
 
-DATABASE_URL: PostgreSQL connection string.
+1. Fork the repository and create your branch (`git checkout -b feature/YourFeature`)
+2. Make your changes, ensure code style / linting is maintained
+3. Add tests (if applicable) and verify existing functionality
+4. Submit a pull request with a clear description of your changes
 
-REDIS_URL: Redis connection string.
+Please follow best practices for commit messages and code structure. You can also open issues for discussion or bug reports.
 
-PORT: 5000
+---
 
-👤 Author
+## License
 
-Siddharth
+This project is under the MIT License. See the `LICENSE` file for details.
 
-GitHub: @itz-sidd
+---
 
-📄 License
+## Contact
+
+Project maintained by **Siddharth** (GitHub: [@itz-sidd](https://github.com/itz-sidd)).
+Feel free to reach out for questions, feedback or suggestions!
+
+---
+
+## Thank you for using / exploring Shorten_url! 🚀
+
