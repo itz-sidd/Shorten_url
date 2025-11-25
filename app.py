@@ -38,6 +38,7 @@ from flask import Flask
 from config import Config          # <--- This imports your settings
 from extensions import db, redis_client
 from routes import shortener_bp
+import os
 
 def create_app():
     app = Flask(__name__)
@@ -60,6 +61,7 @@ def create_app():
 
 if __name__ == '__main__':
     # usage: docker-compose up will run this
+    app = create_app()
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
     # app = create_app()
