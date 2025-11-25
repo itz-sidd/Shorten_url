@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # 1. Your Flask Application
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      # We use the service names ('db', 'redis') as hostnames
+      - DATABASE_URL=postgresql://user:password@db:5432/url_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  # 2. PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: url_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Optional: allows you to connect via TablePlus/pgAdmin
+
+  # 3. Redis Cache
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+# Persist database data even if you delete the containers
+volumes:
+  postgres_data:
