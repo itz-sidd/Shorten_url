@@ -1,117 +1,120 @@
-🚀 High-Performance URL Shortener
+⚡ URL-SHORTNER_DOCK: High-Performance Link Shortener
 
-A full-stack, containerized URL shortening service built to demonstrate scalable microservices architecture. It features a persistent database layer, an in-memory caching layer for high performance, and a modern dark-mode UI.
+📖 About The Project
 
-🔴 Live Demo
+FlashURL is not just another URL shortener; it is a microservices-ready application designed to handle high-traffic loads efficiently.
 
-🏗 Architecture
+Unlike basic CRUD applications, this project implements a Read-Through Caching Strategy using Redis. This ensures that popular links are served instantly from memory (RAM), protecting the primary database from being overwhelmed by read traffic.
 
-This project moves beyond simple scripts by implementing a 3-tier architecture orchestrated via Docker Compose:
+🌟 Key Features
 
-Web Service (Flask + Gunicorn): Handles HTTP requests and business logic.
+🚀 Ultra-Fast Redirects: Sub-millisecond read times using Redis caching.
 
-Caching Layer (Redis): Stores frequently accessed URL mappings in memory (RAM) to reduce database load and latency. Implements an LRU (Least Recently Used) eviction policy.
+🐳 Fully Containerized: Docker & Docker Compose setup for consistent development and deployment environments.
 
-Persistence Layer (PostgreSQL): Stores all historical data permanently.
+💾 Persistent Storage: PostgreSQL ensures data integrity and durability.
 
-Performance Strategy
+🔄 Scalable Architecture: Stateless application tier (Flask + Gunicorn) ready for horizontal scaling.
 
-Write Operations: Saved to PostgreSQL first, then ID generated (Base62), then updated.
+🌑 Modern UI: Clean, responsive dark-mode frontend for user interaction.
 
-Read Operations:
+🏗️ System Architecture
 
-Check Redis Cache first. (Speed: <5ms)
+The application follows a 3-tier architecture optimized for read-heavy workloads:
 
-If Miss: Check PostgreSQL. (Speed: ~50ms)
+graph LR
+    User -->|HTTP Request| LoadBalancer
+    LoadBalancer --> App(Flask Service)
+    App -->|1. Check Cache| Cache(Redis)
+    Cache -- Hit --> App
+    Cache -- Miss --> App
+    App -->|2. Fetch Data| DB(PostgreSQL)
+    App -->|3. Update Cache| Cache
+    App -->|4. Response| User
 
-Save result to Redis with a 1-hour expiration (TTL).
 
-Redirect user.
+🚀 Getting Started
 
-🛠 Tech Stack
-
-Backend: Python 3, Flask
-
-Database: PostgreSQL 15
-
-Cache: Redis (Alpine)
-
-Containerization: Docker & Docker Compose
-
-Server: Gunicorn (Production WSGI)
-
-Frontend: HTML5, CSS3 (Responsive Dark Mode), JavaScript (Fetch API)
-
-Deployment: Render Cloud
-
-⚡ Local Installation & Setup
-
-You can run the entire infrastructure locally with a single command using Docker.
+Follow these steps to get a local copy up and running.
 
 Prerequisites
 
-Docker Desktop installed and running.
+Docker Desktop installed on your machine.
 
-Steps
+Installation & Run
 
-Clone the repository
+Clone the repo
 
 git clone [https://github.com/itz-sidd/Shorten_url.git](https://github.com/itz-sidd/Shorten_url.git)
 cd Shorten_url
 
 
-Run with Docker Compose
+Start the services
 
 docker-compose up --build
 
 
-Access the App
+That's it!
 
-Open your browser to: http://localhost:5000
+Visit the UI: http://localhost:5000
 
-API is available at: http://localhost:5000/shorten
+API Endpoint: http://localhost:5000/shorten
 
-🔌 API Endpoints
+🔌 API Reference
 
-1. Shorten a URL
+1. Create Short Link
 
-Request:
-POST /shorten
+URL: /shorten
+
+Method: POST
+
+Headers: Content-Type: application/json
+
+Body:
 
 {
-  "original_url": "[https://www.youtube.com/watch?v=dQw4w9WgXcQ](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
+  "original_url": "[https://www.google.com](https://www.google.com)"
 }
 
 
 Response:
 
 {
-  "original_url": "[https://www.youtube.com/watch?v=dQw4w9WgXcQ](https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
-  "short_url": "[https://url-shorten-dock.onrender.com/1](https://url-shorten-dock.onrender.com/1)"
+  "original_url": "[https://www.google.com](https://www.google.com)",
+  "short_url": "[https://url-shorten-dock.onrender.com/1a](https://url-shorten-dock.onrender.com/1a)"
 }
 
 
-2. Redirect
+2. Access Link
 
-Request:
-GET /<short_code>
+URL: /<short_code>
 
-Behavior:
+Method: GET
 
-Redirects to the original long URL.
+Description: Redirects the user to the original long URL.
 
-Returns 404 JSON if the code does not exist.
+☁️ Deployment
 
-📂 Project Structure
+This project is deployed using a CI/CD workflow on Render.
 
-/
-├── app.py              # Application factory & entry point
-├── routes.py           # API endpoints & Controller logic
-├── models.py           # SQLAlchemy Database Models
-├── config.py           # Environment Configuration
-├── extensions.py       # Plugin initialization (DB, Redis)
-├── utils.py            # Base62 Encoding/Decoding logic
-├── Dockerfile          # Python/Flask Container instructions
-├── docker-compose.yml  # Orchestration of App + DB + Redis
-└── templates/
-    └── index.html      # Frontend UI
+Service Type: Web Service (Docker Runtime)
+
+Database: Managed PostgreSQL 15
+
+Cache: Managed Redis (Valkey)
+
+Environment Variables Required:
+
+DATABASE_URL: PostgreSQL connection string.
+
+REDIS_URL: Redis connection string.
+
+PORT: 5000
+
+👤 Author
+
+Siddharth
+
+GitHub: @itz-sidd
+
+📄 License
