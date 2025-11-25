@@ -16,5 +16,8 @@ COPY . .
 # Expose the port Flask runs on
 EXPOSE 5000
 
-# Command to run the application
-CMD ["python", "app.py"]
+# # Command to run the application
+# CMD ["python", "app.py"]
+
+# NEW: Run Gunicorn with 4 workers
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:create_app()"]

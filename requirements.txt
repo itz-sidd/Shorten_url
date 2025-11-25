@@ -3,3 +3,4 @@ Flask-SQLAlchemy
 psycopg2-binary   # PostgreSQL adapter
 redis             # Python Redis client
 flask-redis       # Flask extension for Redis
+gunicorn
